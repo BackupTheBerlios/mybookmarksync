@@ -1,0 +1,16 @@
+###############################################################################
+# BookmarkSync (server-php-minimal)            (c) 1998-200x SyncIT.com, Inc. #
+# CHANGELOG                 http://www.sourceforge.net/projects/bookmarksync/ #
+###############################################################################
+
+0.2.0 (released October 21st, 2003)
+  - all database tables prefixed with syncit_ now.
+  - upgrade.php added to convert plaintext passwords to md5'd equivalents.
+  - CSS/XHTML valid gui added to the index.php. others pages to follow.
+  - all GPL headers now include cvs keyword macros for modifications.
+  - the view.php has been replaced with the tree view.php from Michael.
+  - an images/ directory has been added to supplement view.php.
+  - most of the tangible bugs from Yahoo! Groups have been fixed.
+
+0.1.0 (released September 27th, 2003)
+  - First public release.

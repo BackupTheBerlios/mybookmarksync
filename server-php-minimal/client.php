@@ -1,5 +1,5 @@
 <?php
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ----------------------------------------------------------------------------
 // client.php
 // Copyright (C) 2003  SyncIT.com, Inc.
 //
@@ -14,53 +14,29 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-// -----------------
+// along with this program; if not, write to the Free Software Foundation,
+// Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// ----------------------------------------------------------------------------
 // This library is GPL'd.  If you distribute this program or a derivative of
 // this program publicly you must include the source code.  It is easy
 // enough to drop us an email requesting a different license, if necessary.
 //
 // Description: Server code the Syncit client communicates with. 
-//
-// Author:      Michael Berneis, Terence Way
-// Created:     July 1998
-// Modified:    9/22/2003 by Michael Berneis
-// E-mail:      mailto:opensource@syncit.com
-//
-// Modified:    10/01/2003 by Morbus Iff, morbus@disobey.com
-// Changes:
-//
-//    * the debug file was renamed to be more generic, debug routines
-//      are now generic (and not just SQL related), and the debug file
-//      is opened outside of the debug routine to minimize fopen's.
-//    * all exit calls were turned into end_script so that we can close
-//      our opened debug file, as well as print to it if necessary.
-//    * trimmed a bunch of un-used variables (like $version, $charset, etc.).
-//    * added more error checking using the new debug format.
-//    * removed currently un-used (in minimal) 'images' table, and
-//      added a few apostraphes here and there for SQL statements.
-//
-// Known bugs:
-//    * 8-bit characters? http://groups.yahoo.com/group/bookmarksync/message/12
-//      and http://groups.yahoo.com/group/bookmarksync/message/28.
-//
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Created:     July 1998, SyncIT.com, Inc.
+// Modified:    $Date: 2003/11/01 10:44:28 $, $Author: siebert $
+// ----------------------------------------------------------------------------
 
-$debug   = true;     // set this to log SQL statements and client communication.
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// MAIN PROGRAM. Nothing needs to be changed below for normal usage.
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-header("Content-type: text/plain");
+$debug   = false;     // set this to log SQL statements and client communication.
 
 // if debugging is turned on, open up the debug log in the current
 // directory. this was moved out of the routine so that the fopen
 // would only happen once, and not for every SQL statement. this
 // debug.log file needs 666 file permissions for the webserver.
-$debug_fh = fopen("debug.log", "a");
+if ($debug) { $debug_fh = @fopen("debug.log", "a"); }
 debug("*** Starting client operation. ***");
+
+// start our server response.
+header("Content-type: text/plain");
 
 // get our passed client parameters
 $email   = trim($_POST["Email"]);
@@ -83,13 +59,12 @@ debug("Client version: $version; Charset: $charset");
 include "db.php"; if (!db_connect()) { die; }
 
 // check email address for validity.
-$res  = my_mysql_query("select personid, token, pass from person where email='$email'");
+$res  = my_mysql_query("select personid, token, pass from syncit_person where email='$email'");
 $data = mysql_fetch_assoc($res); // now this should contain this user's db information.
 if (!$data){ echo "*N\r\n*Z\r\n"; end_script("No matching email address for '$email'."); }
 else { $ID = $data["personid"]; $stoken = intval($data["token"]); }
 
-// check the user's password against an MD5 value.
-$md5pw = base64_encode(pack("H*",md5($email . $data['pass'])));
+$md5pw = $data['pass']; // // check the user's password against an MD5 value.
 if ($md5pw != $pass) { echo "*P\r\n*Z\r\n"; end_script("Incorrect password for '$email'."); }
 
 // and spit back a little server 'hello'!
@@ -100,7 +75,7 @@ echo "*S,Root,\"http://" . $_SERVER['SERVER_NAME'] . "/\"\r\n";
 if ($stoken > $ctoken) {
 
     // return the user's bookmark list if server token is greater.
-    $res = my_mysql_query("select path, url from link, bookmarks where bookid = book_id ".
+    $res = my_mysql_query("select path, url from syncit_link, syncit_bookmarks where bookid = book_id ".
                           "and person_id = '$ID' and expiration is NULL order by path");
 
     // tell the client data is coming.
@@ -140,8 +115,8 @@ else {
         } while (true);
 
         // with our updates finished, we update the token and move on.
-        my_mysql_query("update person set token = token+1, lastchanged = now() where personid='$ID'");
-        $res = my_mysql_query("select token from person where personid='$ID'");
+        my_mysql_query("update syncit_person set token = token+1, lastchanged = now() where personid='$ID'");
+        $res = my_mysql_query("select token from syncit_person where personid='$ID'");
 
         // get the new server token for client updating.
         $data = mysql_fetch_assoc($res); $stoken = $data["token"];
@@ -179,8 +154,8 @@ function parseline($bm_row,$ID) {
        $surl = substr($url,7,55).substr($url,-200);   // MySQL indexes can only be 255. 
 
        // insert the bookmark.
-       my_mysql_query("insert into bookmarks (url, surl) values ('$url', '$surl')");
-       $res = my_mysql_query("select bookid from bookmarks where surl='$surl'");
+       my_mysql_query("insert into syncit_bookmarks (url, surl) values ('$url', '$surl')");
+       $res = my_mysql_query("select bookid from syncit_bookmarks where surl='$surl'");
 
        // and check the expiration date. deleted URLs should
        // be regularly purged from the database after a certain
@@ -188,11 +163,11 @@ function parseline($bm_row,$ID) {
        // deleted, but hasn't yet, we resurrect it.
        if ($data = mysql_fetch_assoc($res)) {
            $bid = $data['bookid']; // shorter.
-           $res = my_mysql_query("insert into link (expiration, person_id, access, path, ".
+           $res = my_mysql_query("insert into syncit_link (expiration, person_id, access, path, ".
                                  "book_id) values (NULL, '$ID', now(), '$path', '$bid')");
 
            // bookmark exists already, but expired. Unexpire!
-           if (!$res) { my_mysql_query("update link set expiration = NULL, book_id = '$bid' " .
+           if (!$res) { my_mysql_query("update syncit_link set expiration = NULL, book_id = '$bid' " .
                                        "where person_id = '$ID' and path = '$path'");
            }
        }
@@ -202,17 +177,17 @@ function parseline($bm_row,$ID) {
     // date. this allows us to undelete
     // before a certain time period passed.
     else if ($cmd == "D") {
-        my_mysql_query("update link set expiration = now() where path = '$path' and person_id = '$ID'");
+        my_mysql_query("update syncit_link set expiration = now() where path = '$path' and person_id = '$ID'");
     }
 
     // make directory, catering
     // to previously expired ones.
     else if ($cmd == "M") {
-        $res = my_mysql_query("insert into link (expiration, person_id, access, ".
+        $res = my_mysql_query("insert into syncit_link (expiration, person_id, access, ".
                               "path) values (NULL, '$ID', now(), '$path')");
 
         if (!$res) { // resurrect a deleted directory.
-            my_mysql_query("update link set expiration = NULL, book_id = NULL ".
+            my_mysql_query("update syncit_link set expiration = NULL, book_id = NULL ".
                            "where person_id = '$ID' and path = '$path'");
         }
     }
@@ -220,7 +195,7 @@ function parseline($bm_row,$ID) {
     // remove directory by setting
     // the expiration date to now.
     else if ($cmd == "R") {
-        my_mysql_query("update link set expiration = now() where path = '$path' and person_id = '$ID'");
+        my_mysql_query("update syncit_link set expiration = now() where path = '$path' and person_id = '$ID'");
     }
 
     // bah!

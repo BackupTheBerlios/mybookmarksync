@@ -1,37 +1,33 @@
 <?php
-//	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//	config.php
-//	Copyright (C) 2003  SyncIT.com, Inc.
-//	
-//	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation; either version 2 of the License, or
-//	(at your option) any later version.
-//	
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
-//	
-//	You should have received a copy of the GNU General Public License
-//	along with this program; if not, write to the Free Software
-//	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	-----------------
-//	This library is GPL'd.  If you distribute this program or a derivative of
-//	this program publicly you must include the source code.  It is easy
-//	enough to drop us an email requesting a different license, if necessary.
-//	
-//	Description: Bare-bones user registration
-//	
-//	Author:      Michael Berneis, Terence Way
-//	Created:     July 1998
-//	Modified:    9/22/2003 by Michael Berneis
-//	E-mail:      mailto:opensource@syncit.com
-//	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ----------------------------------------------------------------------------
+// config.php
+// Copyright (C) 2003  SyncIT.com, Inc.
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software Foundation,
+// Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// ----------------------------------------------------------------------------
+// This library is GPL'd.  If you distribute this program or a derivative of
+// this program publicly you must include the source code.  It is easy
+// enough to drop us an email requesting a different license, if necessary.
+//
+// Description: Bare-bones user registration.
+// Created:     July 1998, SyncIT.com, Inc.
+// Modified:    $Date: 2003/11/01 10:44:28 $, $Author: siebert $
+// ----------------------------------------------------------------------------
 
-// Change this master password
-	$masterpass = 'ilovesyncit';
-//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// change this master password
+$masterpass = 'ilovesyncit';
 
 $master = (isset($_POST["master"]))?$_POST["master"]:NULL;
 $name = (isset($_POST["name"]))?$_POST["name"]:NULL;
@@ -45,7 +41,8 @@ if ($email && $pass && $name && $master) {
 		die();
 	}
 	$name=str_replace("'","''",$name);
-	$sql = "insert into person (name,email,pass,registered,token) values ('$name','$email','$pass',Now(),0)";
+        $md5pw = base64_encode(pack("H*", md5($email . $pass)));
+        $sql = "insert into syncit_person (name,email,pass,registered,token) values ('$name','$email','$md5pw',Now(),0)";
 	//echo "$sql<hr>";
 	$res = mysql_query($sql);
 	if (!$res) {

@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 // view.php
 // Copyright (C) 2003  SyncIT.com, Inc.
-//	
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -20,10 +20,10 @@
 // This library is GPL'd.  If you distribute this program or a derivative of
 // this program publicly you must include the source code.  It is easy
 // enough to drop us an email requesting a different license, if necessary.
-//	
+//
 // Description: Tree folder bookmark view.
 // Created:     July 1998, SyncIT.com, Inc.
-// Modified:    $Date: 2003/10/15 19:35:27 $, $Author: siebert $
+// Modified:    $Date: 2003/11/01 10:44:28 $, $Author: siebert $
 // ----------------------------------------------------------------------------
 session_start();
 ?>
@@ -129,7 +129,7 @@ if (!db_connect())
 	$target = $_SESSION['target'];
 	if ($target == "")
 		$target = "_blank";
-	$sql = "select link.path,bookmarks.url from bookmarks right join link on bookmarks.bookid = link.book_id where link.person_id=" . $ID . " and link.expiration is null order by link.path";
+	$sql = "select syncit_link.path,syncit_bookmarks.url from syncit_bookmarks right join syncit_link on syncit_bookmarks.bookid = syncit_link.book_id where syncit_link.person_id=" . $ID . " and syncit_link.expiration is null order by syncit_link.path";
 
 	$res = mysql_query($sql);
 	if (!$res)
