@@ -9,6 +9,11 @@
     inserted into the database.
   - Fixed reg.php:SF Bug 817537 (REGEDIT4 and no trailing slash for root)
     Blank line after copyright block broke header modification.
+  - All unnecessary tables and fields of the remaining tables in
+    bookmarksync.sql were removed (to make it minimal).
+  - Added new database table syncit_config which stores configuration
+    params. (currently used for debug output only, but other params like
+    master password etc. should be stored here)
   
 0.2.0 (released October 21st, 2003)
   - all database tables prefixed with syncit_ now.
