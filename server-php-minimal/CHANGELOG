@@ -3,6 +3,11 @@
 # CHANGELOG                 http://www.sourceforge.net/projects/bookmarksync/ #
 ###############################################################################
 
+0.2.1 (released on http://developer.berlios.de/projects/mybookmarksync/ 01.11.2003)
+  - more extensive and more user friendly debugging via new debug.php page.
+  - Fixed SF bugs 830173 and 823312 (URLs containing quotes couldn't
+    inserted into the database.
+  
 0.2.0 (released October 21st, 2003)
   - all database tables prefixed with syncit_ now.
   - upgrade.php added to convert plaintext passwords to md5'd equivalents.
