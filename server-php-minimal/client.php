@@ -35,7 +35,7 @@ header("Content-type: text/plain");
 //*** Will be set to true if at least one delete or add statement
 $changed = false;
 
-$debug = false;		// set this to true to log all sql statements in parseline()
+$debug = TRUE;		// set this to true to log all sql statements in parseline()
 
 
 
@@ -163,14 +163,17 @@ exit();
 function parseline($bm_row,$ID)
 {
 	// sheesh!
-	$bm_row = stripslashes($bm_row);
+	if (get_magic_quotes_gpc() == 1) {
+	  $bm_row = stripslashes($bm_row);
+	}
 	$bm_row = trim($bm_row);
 
 	$cmd = substr($bm_row,0,1);												//*** first char is command
 	$bm_row = substr($bm_row,3);			// *** strip 1st token
 	$l = strpos($bm_row,"\"");												//*** find "
 	$tpath = substr($bm_row,0,$l);										// *** get path
-	$path = str_replace("'","''",$tpath);									// *** SQL escape single quotes
+	$path = $tpath;
+	 
 
 	// add bookmark
 	if ($cmd == "A"){
@@ -190,7 +193,7 @@ function parseline($bm_row,$ID)
 
 	// delete it = set expiration
 	else if ($cmd == "D")
-		my_mysql_query("update link set expiration = now() where path = '\\" . $path . "' and person_id = " . $ID);
+		my_mysql_query("update link set expiration = now() where path = '" . addslashes($path) . "' and person_id = " . $ID);
 
 	// make directory
 	else if ($cmd == "M"){
@@ -202,7 +205,7 @@ function parseline($bm_row,$ID)
 	// remove directory
 	else if ($cmd == "R")
 		my_mysql_query("update link set expiration = now() where path = '" . addslashes($path) . "' and person_id = " . $ID);
-
+	
 	// invalid command
 	else {
 		echo "*E\r\nInvalid Bookmark Command: " .$cmd . "\r\n";
