@@ -1,36 +1,33 @@
 <?php
-//	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//	tview.php
-//	Copyright (C) 2003  SyncIT.com, Inc.
+// ----------------------------------------------------------------------------
+// view.php
+// Copyright (C) 2003  SyncIT.com, Inc.
 //	
-//	This program is free software; you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation; either version 2 of the License, or
-//	(at your option) any later version.
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software Foundation,
+// Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// ----------------------------------------------------------------------------
+// This library is GPL'd.  If you distribute this program or a derivative of
+// this program publicly you must include the source code.  It is easy
+// enough to drop us an email requesting a different license, if necessary.
 //	
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
-//	
-//	You should have received a copy of the GNU General Public License
-//	along with this program; if not, write to the Free Software
-//	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	-----------------
-//	This library is GPL'd.  If you distribute this program or a derivative of
-//	this program publicly you must include the source code.  It is easy
-//	enough to drop us an email requesting a different license, if necessary.
-//	
-//	Description: Tree Folder Bookmark View
-//	
-//	Author:      Michael Berneis, Terence Way
-//	Created:     July 1998
-//	Modified:    10/1/2003 by Michael Berneis
-//	E-mail:      mailto:opensource@syncit.com
-//	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+// Description: Tree folder bookmark view.
+// Created:     July 1998, SyncIT.com, Inc.
+// Modified:    $Date: 2003/10/15 19:35:27 $, $Author: siebert $
+// ----------------------------------------------------------------------------
 session_start();
 ?>
+
 <html>
 <head>
 <base target=_blank>
@@ -40,7 +37,7 @@ session_start();
     font-family: "MS Sans Serif", Arial, Helvetica, sans-serif;
     font-size: 11px;
     font-weight: normal;
-	list-style-image: url("f.gif");
+	list-style-image: url("images/f.gif");
 	cursor: hand;
 }
 
@@ -48,7 +45,7 @@ session_start();
 	font-family: "MS Sans Serif", Arial, Helvetica, sans-serif;
 	font-size: 10px;
 	font-weight: normal;
-	list-style-image: url("a.gif");
+	list-style-image: url("images/a.gif");
 }
 .bi a:link {text-decoration: none; color: #000099; }
 .bi a:visited {text-decoration: none; color: #000099; }
@@ -59,9 +56,9 @@ session_start();
 <!--
 var head="display:''"
 img1=new Image()
-img1.src="f.gif"
+img1.src="images/f.gif"
 img2=new Image()
-img2.src="o.gif"
+img2.src="images/o.gif"
 
 function nchange(f) {
 	f1.style.display='';
@@ -84,14 +81,14 @@ function change(){
       var srcIndex = event.srcElement.sourceIndex
       var nested = document.all[srcIndex+noff]
       if (nested.style.display=="none") {
-         document.all[srcIndex+soff].src="o.gif"
+         document.all[srcIndex+soff].src="images/o.gif"
          nested.style.display=''
-         //event.srcElement.style.listStyleImage="url(o.gif)"
+         //event.srcElement.style.listStyleImage="url(images/o.gif)"
       }
       else {
-         document.all[srcIndex+soff].src="f.gif"
+         document.all[srcIndex+soff].src="images/f.gif"
          nested.style.display="none"
-         //event.srcElement.style.listStyleImage="url(f.gif)"
+         //event.srcElement.style.listStyleImage="url(images/f.gif)"
       }
    }
 }
@@ -157,7 +154,7 @@ if (!db_connect())
 			if ($items > $last_items){
 				for ($idx = 0; $idx < $items-1; $idx++){
 					if (!isset($last_line[$idx]) || $line[$idx] != $last_line[$idx]){
-						echo "<div id='fx' class='fi'><img src='s.gif' width='0'><img src='s.gif' width='0'><img src='s.gif' height=10 width=" . ($idx*15) . "><img id='fx1' src='f.gif'>" . $line[$idx] . "</div>\r\n";
+						echo "<div id='fx' class='fi'><img src='images/s.gif' width='0'><img src='images/s.gif' width='0'><img src='images/s.gif' height=10 width=" . ($idx*15) . "><img id='fx1' src='images/f.gif'>" . $line[$idx] . "</div>\r\n";
 						echo "<div id='fl' style='display:none' style=&{head};>\r\n";
 					}
 				}
@@ -169,7 +166,7 @@ if (!db_connect())
 
 				for ($idx = 0; $idx < $items-1; $idx++){
 					if ($last_line[$idx] != $line[$idx]){
-						echo "<div id='fx' class='fi'><img src='s.gif' width='0'><img src='s.gif' width='0'><img src='s.gif' height=10 width=" . ($idx*15) . "><img id='fx1' src='f.gif'>" . $line[$idx] . "</div>\r\n";
+						echo "<div id='fx' class='fi'><img src='images/s.gif' width='0'><img src='images/s.gif' width='0'><img src='images/s.gif' height=10 width=" . ($idx*15) . "><img id='fx1' src='images/f.gif'>" . $line[$idx] . "</div>\r\n";
 						echo "<div id='fl' style='display:none' style=&{head};>\r\n";
 					}
 				}
@@ -182,10 +179,10 @@ if (!db_connect())
 		// else we differ on the link only so add a link in the current folder
 		else {
 			if ($items > 1){
-				echo "<div class='bi'><img src='s.gif' width='0'><img src='s.gif' height=10 width=" . (($items-1)*15) . "><img src='a.gif'><a target='" . $target . "' href='" . $data['url'] . "'>" . $line[$items-1] . "</a></div>\r\n";
+				echo "<div class='bi'><img src='images/s.gif' width='0'><img src='images/s.gif' height=10 width=" . (($items-1)*15) . "><img src='images/a.gif'><a target='" . $target . "' href='" . $data['url'] . "'>" . $line[$items-1] . "</a></div>\r\n";
 			}
 			else {
-				$myurl[$url_idx++] = "<div class='bi'><img src='s.gif' width='0'><img src='s.gif' height=10 width=" . (($items-1)*15) . "><img src='a.gif'><a target='" . $target . "' href='" . $data['url'] . "'>" . $line[0] . "</a></div>\r\n";
+				$myurl[$url_idx++] = "<div class='bi'><img src='images/s.gif' width='0'><img src='images/s.gif' height=10 width=" . (($items-1)*15) . "><img src='images/a.gif'><a target='" . $target . "' href='" . $data['url'] . "'>" . $line[0] . "</a></div>\r\n";
 			}
 		}
 	}
