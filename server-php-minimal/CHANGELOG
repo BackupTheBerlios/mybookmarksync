@@ -5,6 +5,13 @@
 
 0.2.1 (released on http://developer.berlios.de/projects/mybookmarksync/ 01.11.2003)
   - more extensive and more user friendly debugging via new debug.php page.
+    After authentification (please change the current password 'secret' to
+    something really secret) the current debug.log is displayed together
+    with the current logging state (logging enabled or disabled).
+
+    A button toggles the logging state, another button refreshes the page
+    (to show new log entries) and with the truncate button it is possible
+    (after confirmation) to flush all log entries.
   - Fixed SF bugs 830173 and 823312 (URLs containing quotes couldn't
     inserted into the database.
   - Fixed reg.php:SF Bug 817537 (REGEDIT4 and no trailing slash for root)
