@@ -23,10 +23,23 @@
 //
 // Description: Server code the Syncit client communicates with. 
 // Created:     July 1998, SyncIT.com, Inc.
-// Modified:    $Date: 2003/11/01 10:44:28 $, $Author: siebert $
+// Modified:    $Date: 2003/11/01 11:08:08 $, $Author: siebert $
 // ----------------------------------------------------------------------------
 
-$debug   = false;     // set this to log SQL statements and client communication.
+// open our database or die crying.
+include "db.php"; if (!db_connect()) { die; }
+
+$debug = false; // set this to log SQL statements and client communication.
+
+$res  = my_mysql_query("select value from syncit_config where param='debug'");
+$data = mysql_fetch_assoc($res);
+if (!$data) {
+    my_mysql_query("insert into syncit_config (param, value) values ('debug', 'false')");
+} else {
+    if ($data["value"] == 'true') {
+      $debug = true;
+    }
+}
 
 // if debugging is turned on, open up the debug log in the current
 // directory. this was moved out of the routine so that the fopen
@@ -49,26 +62,37 @@ $version = trim($_POST["Version"]);
 // and cry if none of them exist. only charset and
 // version are optional, but highly recommended.
 if (!$email && !$pass && !$ctoken && !$content) {
-   echo "*N\r\n*Z\r\n"; end_script("None of our required settings were received.");
+   my_echo("*N");
+   my_echo("*Z");
+   end_script("None of our required settings were received.");
 }
 
 // print some information about the client.
-debug("Client version: $version; Charset: $charset");
-
-// open our database or die crying.
-include "db.php"; if (!db_connect()) { die; }
+debug("Client version: $version; Charset: $charset; Token: $ctoken");
 
 // check email address for validity.
 $res  = my_mysql_query("select personid, token, pass from syncit_person where email='$email'");
 $data = mysql_fetch_assoc($res); // now this should contain this user's db information.
-if (!$data){ echo "*N\r\n*Z\r\n"; end_script("No matching email address for '$email'."); }
-else { $ID = $data["personid"]; $stoken = intval($data["token"]); }
+if (!$data) {
+    my_echo("*N");
+    my_echo("*Z");
+    end_script("No matching email address for '$email'.");
+} else {
+    $ID = $data["personid"];
+    $stoken = intval($data["token"]);
+}
 
 $md5pw = $data['pass']; // // check the user's password against an MD5 value.
-if ($md5pw != $pass) { echo "*P\r\n*Z\r\n"; end_script("Incorrect password for '$email'."); }
+if ($md5pw != $pass) {
+    my_echo("*P");
+    my_echo("*Z");
+    end_script("Incorrect password for '$email'.");
+}
 
 // and spit back a little server 'hello'!
-echo "*S,Root,\"http://" . $_SERVER['SERVER_NAME'] . "/\"\r\n";
+my_echo("*S,Root,\"http://" . $_SERVER['SERVER_NAME'] . "/\"");
+
+debug("Current Token: $stoken");
 
 // compare client and server tokens
 // to see whether we should update.
@@ -79,15 +103,16 @@ if ($stoken > $ctoken) {
                           "and person_id = '$ID' and expiration is NULL order by path");
 
     // tell the client data is coming.
-    echo "*T," . $stoken . "\r\n*B\r\n";
+    my_echo("*T," . $stoken);
+    my_echo("*B");
 
     // and send it all in.
     while ($data = mysql_fetch_assoc($res)) {
-       debug("\"$data[path]\",\"$data[url]\"\r\n");
-       echo "\"$data[path]\",\"$data[url]\"\r\n";
+       my_echo("\"$data[path]\",\"$data[url]\"");
     }
 
-    echo "*Z\r\n"; end_script("Finished sending server bookmarks.");
+    my_echo("*Z");
+    end_script("Finished sending server bookmarks.");
 }
 
 // Bookmarks seem up to date,
@@ -108,7 +133,10 @@ else {
           $i = strpos($content,"\r\n"); if ($i == 0) { break; }
 
           $bm_row = substr($content,0,$i); // get the current bookmark and send it to be parsed.
-          if (parseline($bm_row, $ID)){ echo "*Z\r\n"; end_script("'parseline' returned a positive value."); } 
+          if (parseline($bm_row, $ID)) {
+              my_echo("*Z");
+              end_script("'parseline' returned a positive value.");
+          } 
 
           // this bookmark is finished, so pop it off our list.
           $content = substr($content,strlen($content)-(strlen($content)-$i-1));
@@ -122,11 +150,12 @@ else {
         $data = mysql_fetch_assoc($res); $stoken = $data["token"];
 
         // return new server token.
-        echo "*T," . $stoken . "\r\n";
+        my_echo("*T," . $stoken);
     }
 }
 
-echo "*Z\r\n"; end_script("*** Finished client operation. ***");
+my_echo("*Z");
+end_script("*** Finished client operation. ***");
 
 
 
@@ -149,9 +178,9 @@ function parseline($bm_row,$ID) {
 
     // add bookmark
     if ($cmd == "A") {
-       $url = substr($bm_row,strlen($tpath)+3);       // get the URL from our row.
-       $url = trim($url,"\"\r\n");                    // remove ookiness and junk.
-       $surl = substr($url,7,55).substr($url,-200);   // MySQL indexes can only be 255. 
+       $url = substr($bm_row,strlen($tpath)+3);                   // get the URL from our row.
+       $url = addslashes(trim($url,"\"\r\n"));                    // remove ookiness and junk.
+       $surl = addslashes(substr($url,7,55).substr($url,-200));   // MySQL indexes can only be 255. 
 
        // insert the bookmark.
        my_mysql_query("insert into syncit_bookmarks (url, surl) values ('$url', '$surl')");
@@ -200,7 +229,8 @@ function parseline($bm_row,$ID) {
 
     // bah!
     else {
-        echo "*E\r\nInvalid Bookmark Command: $cmd \r\n";
+        my_echo("*E");
+        my_echo("Invalid Bookmark Command: $cmd ");
         debug("Invalid Bookmark Command: [$cmd].");
         return true;
     }
@@ -214,7 +244,17 @@ function parseline($bm_row,$ID) {
 function my_mysql_query($str) {
     debug($str); // fun!
     $res = mysql_query($str);
+    if (!$res) {
+        debug("SQL Error: " . mysql_error());
+    } else {
+        debug("Result: " . $res);
+    }
     return $res;
+}
+
+function my_echo($str) {
+    debug("Sending: " . $str);
+    echo $str . "\r\n";
 }
 
 // merely prints the passed
