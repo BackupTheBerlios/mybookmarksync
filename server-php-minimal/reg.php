@@ -23,21 +23,20 @@
 //
 // Description: Creates registry file for Win32.
 // Created:     July 1998, SyncIT.com, Inc.
-// Modified:    $Date: 2003/11/01 10:44:28 $, $Author: siebert $
+// Modified:    $Date: 2003/11/01 11:14:21 $, $Author: siebert $
 // ----------------------------------------------------------------------------
 ?>
-
 <?php
 header("Content-type: text/plain");
 header("Content-Disposition: attachment; filename=syncit.reg");
 
 $reg_client = str_replace ("reg.php","client.php",($HTTP_SERVER_VARS["REQUEST_URI"])); 
 $reg_root = $_SERVER['SERVER_NAME'];
-$reginfo = 'Windows Registry Editor Version 5.00
+$reginfo = 'REGEDIT4
 
 [HKEY_CURRENT_USER\Software\SyncIT\BookmarkSync]
 "LastEmail"="Enter_Your_Email"
-"root"="http://'.$reg_root.'/"
+"root"="http://'.$reg_root.'"
 "file3"="'.$reg_client.'"
 "LastMD5"=""
 ';
