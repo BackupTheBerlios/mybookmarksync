@@ -1,6 +1,6 @@
 <?php
 //	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//	db.php
+//	tview.php
 //	Copyright (C) 2003  SyncIT.com, Inc.
 //	
 //	This program is free software; you can redistribute it and/or modify
@@ -21,11 +21,11 @@
 //	this program publicly you must include the source code.  It is easy
 //	enough to drop us an email requesting a different license, if necessary.
 //	
-//	Description: bare-bones bookmark view
+//	Description: Tree Folder Bookmark View
 //	
 //	Author:      Michael Berneis, Terence Way
 //	Created:     July 1998
-//	Modified:    9/22/2003 by Michael Berneis
+//	Modified:    10/1/2003 by Michael Berneis
 //	E-mail:      mailto:opensource@syncit.com
 //	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -35,7 +35,73 @@ session_start();
 <head>
 <base target=_blank>
 <title>Your Bookmarks</title>
+<style>
+.fi {
+    font-family: "MS Sans Serif", Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: normal;
+	list-style-image: url("f.gif");
+	cursor: hand;
+}
+
+.bi {
+	font-family: "MS Sans Serif", Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	font-weight: normal;
+	list-style-image: url("a.gif");
+}
+.bi a:link {text-decoration: none; color: #000099; }
+.bi a:visited {text-decoration: none; color: #000099; }
+.bi a:hover {text-decoration: underline;color: #0000FF; }
+</style>
 </head>
+<script language="JavaScript">
+<!--
+var head="display:''"
+img1=new Image()
+img1.src="f.gif"
+img2=new Image()
+img2.src="o.gif"
+
+function nchange(f) {
+	f1.style.display='';
+	return false;
+}
+
+function change(){
+   if(!document.all) {
+      return
+     }
+   var noff,soff,myid;
+   myid=event.srcElement.id;
+   noff=5;soff=4;
+   //alert (myid);
+   if (myid =="fx1") {
+   	myid="fx";
+   	soff=0;noff=1;
+   }
+   if (myid=="fx") {
+      var srcIndex = event.srcElement.sourceIndex
+      var nested = document.all[srcIndex+noff]
+      if (nested.style.display=="none") {
+         document.all[srcIndex+soff].src="o.gif"
+         nested.style.display=''
+         //event.srcElement.style.listStyleImage="url(o.gif)"
+      }
+      else {
+         document.all[srcIndex+soff].src="f.gif"
+         nested.style.display="none"
+         //event.srcElement.style.listStyleImage="url(f.gif)"
+      }
+   }
+}
+
+document.onclick=change
+
+//-->
+
+</script>
+
 <body>
 <?php
 include 'db.php';
@@ -47,27 +113,103 @@ if ($pid == "")
 if (!db_connect())
 	die();
 
-$res = mysql_query("select name from person where personid = ".$pid);
-$data = mysql_fetch_assoc($res);
+{
+	$vlen = 0;
+	$myurl = array();
+	$url_idx = 0;
+	$last_line = array();
+	$last_items = 0;
+	$items = 0;
 
-echo "<h3>" . $data["name"] . "- Bookmarks</h3><ul>";
+	$ID = $pid;
 
-$res = mysql_query("select link.path,bookmarks.url from bookmarks right join link on bookmarks.bookid=link.book_id where link.person_id=" . $pid . " and link.expiration is null order by link.path");
+	if (!db_connect())
+		die();
 
-$delim = "";
-$showit = true;
-$level = 1;
-$foldernum = 0;
-$url = "";
-while ($data = mysql_fetch_assoc($res)){
+	$MSIE = strpos($_SERVER['HTTP_USER_AGENT'],"MSIE");
+	$NS6 = strpos($_SERVER['HTTP_USER_AGENT'],"Netscape6");
+	$NS6 = false;
+	$target = $_SESSION['target'];
+	if ($target == "")
+		$target = "_blank";
+	$sql = "select link.path,bookmarks.url from bookmarks right join link on bookmarks.bookid = link.book_id where link.person_id=" . $ID . " and link.expiration is null order by link.path";
 
-	$p = $data["path"];
-	$u = $data["url"];
-	if (strlen($u)>0) // only bookmarks, no folders
-		echo "<li><a href='$u'>$p</a>\r\n";
-}
-echo "</ul>";
+	$res = mysql_query($sql);
+	if (!$res)
+		die("$sql<hr>Cannot retrieve data in tree.php");
+
+	$delim = "";
+	$showit = true;
+	$level = 1;
+	$foldernum = 0;
+
+	while($data = mysql_fetch_assoc($res)){
+
+		$is_folder = false;
+		if (!isset($data['url']))
+			$is_folder = true;
+
+		$line = explode("\\",substr($data['path'],1));
+		$items = count($line);
+
+		if ($is_folder == true){
+
+			if ($items > $last_items){
+				for ($idx = 0; $idx < $items-1; $idx++){
+					if (!isset($last_line[$idx]) || $line[$idx] != $last_line[$idx]){
+						echo "<div id='fx' class='fi'><img src='s.gif' width='0'><img src='s.gif' width='0'><img src='s.gif' height=10 width=" . ($idx*15) . "><img id='fx1' src='f.gif'>" . $line[$idx] . "</div>\r\n";
+						echo "<div id='fl' style='display:none' style=&{head};>\r\n";
+					}
+				}
+			}
+
+			else if ($items <= $last_items){
+				for ($idx = 0; $idx < $last_items - $items +1; $idx++)
+					echo "</div>\r\n";
+
+				for ($idx = 0; $idx < $items-1; $idx++){
+					if ($last_line[$idx] != $line[$idx]){
+						echo "<div id='fx' class='fi'><img src='s.gif' width='0'><img src='s.gif' width='0'><img src='s.gif' height=10 width=" . ($idx*15) . "><img id='fx1' src='f.gif'>" . $line[$idx] . "</div>\r\n";
+						echo "<div id='fl' style='display:none' style=&{head};>\r\n";
+					}
+				}
+			}
+
+			$last_line = $line;
+			$last_items = $items;
+		}
+
+		// else we differ on the link only so add a link in the current folder
+		else {
+			if ($items > 1){
+				echo "<div class='bi'><img src='s.gif' width='0'><img src='s.gif' height=10 width=" . (($items-1)*15) . "><img src='a.gif'><a target='" . $target . "' href='" . $data['url'] . "'>" . $line[$items-1] . "</a></div>\r\n";
+			}
+			else {
+				$myurl[$url_idx++] = "<div class='bi'><img src='s.gif' width='0'><img src='s.gif' height=10 width=" . (($items-1)*15) . "><img src='a.gif'><a target='" . $target . "' href='" . $data['url'] . "'>" . $line[0] . "</a></div>\r\n";
+			}
+		}
+	}
+
+	for ($idx = 0; $idx < $items; $idx++)
+		echo "</div>\r\n";
+
+	echo "</div>\r\n";
+
+	if ($url_idx > 0){
+		for ($idx = 0; $idx < $url_idx; $idx++)
+			echo $myurl[$idx];
+	}
+} 
+	for ($idx = 0; $idx < $items; $idx++)
+		echo "</div>\r\n";
+
+	echo "</div>\r\n";
+
+	if ($url_idx > 0){
+		for ($idx = 0; $idx < $url_idx; $idx++)
+			echo $myurl[$idx];
+	}
+
 ?>
-
 </body>
 </html>
