@@ -7,6 +7,8 @@
   - more extensive and more user friendly debugging via new debug.php page.
   - Fixed SF bugs 830173 and 823312 (URLs containing quotes couldn't
     inserted into the database.
+  - Fixed reg.php:SF Bug 817537 (REGEDIT4 and no trailing slash for root)
+    Blank line after copyright block broke header modification.
   
 0.2.0 (released October 21st, 2003)
   - all database tables prefixed with syncit_ now.
